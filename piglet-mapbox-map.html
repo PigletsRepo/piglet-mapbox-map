@@ -1,0 +1,308 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="imports.html">
+<link rel="import" href="piglet-map-jumpzoom-control.html">
+<link rel="import" href="piglet-map-cluster.html">
+
+<!--
+An mapbox map element from few piglets.
+
+Example:
+
+    <piglet-mapbox-map></piglet-mapbox-map>
+
+Example:
+
+    <piglet-mapbox-map></piglet-mapbox-map>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="piglet-mapbox-map">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        height: 100%;
+      }
+
+      #mapView {
+        position: absolute!important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+    </style>
+    <div id="mapView"></div>
+    <piglet-map-jumpzoom-control id="jumpZoomControl" hidden$="{{!showJumpControl}}" min-zoom=[[minZoom]]></piglet-map-jumpzoom-control>
+    <piglet-map-cluster id="cluster"></piglet-map-cluster>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'piglet-mapbox-map',
+
+      properties: {
+        /**
+         * `accessToken` is the mapbox accessToken.
+         */
+        accessToken: {
+          type: String,
+          value: 'pk.eyJ1IjoiaGFtbWVyaGVhZG5hdiIsImEiOiJ0X3ViMXZBIn0.ELPRVzSFTWhb1v8XaERrdg'
+        },
+
+        /**
+         * Map layer.
+         */
+        layer: {
+          type: String,
+          value: 'mapbox.streets'
+        },
+
+        /**
+         * The default zoom level of the map.
+         */
+        zoom: {
+          type: Number,
+          value: 10,
+        },
+
+        /**
+         * Minimum zoom allowed.
+         */
+        minZoom: {
+          type: Number,
+          value: 2
+        },
+
+        /**
+         * Maximum zoom allowed.
+         */
+        maxZoom: {
+          type: Number,
+          value: 18
+        },
+
+        /**
+         * ContinuousWorld property of map.
+         */
+        continuousWorld: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Nowrap property of map.
+         */
+        noWrap: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Default lat of map.
+         */
+        lat: {
+          type: Number,
+          value: 40.73,
+        },
+
+        /**
+         * Default lng of map.
+         */
+        lng: {
+          type: Number,
+          value: -74.011,
+        },
+
+        /**
+         * Add the jumpzoom control to the top of map.
+         */
+        showJumpControl: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      // Element Lifecycle
+
+      ready: function() {
+        // `ready` is called after all elements have been configured, but
+        // propagates bottom-up. This element's children are ready, but parents
+        // are not.
+        //
+        // This is the point where you should make modifications to the DOM (when
+        // necessary), or kick off any processes the element wants to perform.
+      },
+
+      attached: function() {
+        this._initMapbox();
+        this._initChild();
+      },
+
+      detached: function() {
+      },
+
+      /**
+       * Add the geojson data to the map.
+       *
+       * @param {data} data The geojson data to be added. It can be a single FeatureCollection or an array of FeatureCollections.
+       */
+      addGeoJSONData: function(data) {
+        var ref = this;
+        if (Array.isArray(data)) {
+          data.forEach(function(val) {
+            ref._addLayer(val);
+          });
+        } else {
+          this._addLayer(data);
+        }
+        this._revalidateLayersOnZoom(this.map.getZoom());
+      },
+
+      /**
+       * Clear a layer.
+       *
+       * @param {layerName} layerName The name of the layer to be cleared.
+       */
+      clearLayer: function(layerName) {
+        if (this.dataLayers[layerName]) {
+          var layer = this.dataLayers[layerName];
+          layer.clearLayers();
+        }
+      },
+
+      /**
+       * Hide a layer.
+       *
+       * @param {layerName} layerName The name of the layer to hide.
+       */
+      hideLayer: function(layerName) {
+        if (this.dataLayers[layerName]) {
+          var layer = this.dataLayers[layerName];
+          if (this.map.hasLayer(layer)) {
+            this.map.removeLayer(layer);
+          }
+        }
+      },
+
+      /**
+       * Show a layer.
+       *
+       * @param {layerName} layerName The name of the layer to be shown.
+       */
+      showLayer: function(layerName) {
+        if (this.dataLayers[layerName]) {
+          var layer = this.dataLayers[layerName];
+          if (!this.map.hasLayer(layer)) {
+            this.map.addLayer(layer);
+          }
+        }
+      },
+
+      // Private methods
+      _initMapbox: function() {
+        L.mapbox.accessToken = this.accessToken;
+        var options = {
+          zoom: this.zoom,
+          minZoom: this.minZoom,
+          maxZoom: this.maxZoom,
+          tileLayer: {
+            continuousWorld: this.continuousWorld,
+            noWrap: this.noWrap
+          },
+        }
+        this.map = L.mapbox.map(this.$.mapView, this.layer, options)
+          .setView([this.lat, this.lng], this.zoom);
+        var polymer = this;
+        //Init listeners
+        this.map.on('click', function(e) {
+          polymer._onMapClick(e);
+        });
+        this.map.on('zoomend', function(e) {
+          polymer._onMapZoom(e);
+        });
+        // Init layers
+        this.dataLayers = {};
+      },
+
+      _initChild: function() {
+        this.$.jumpZoomControl.map = this.map;
+        this.$.cluster.map = this.map;
+      },
+
+      _onMapClick: function(e) {
+        this.$.jumpZoomControl.onMapClick(e);
+      },
+
+      _onMapZoom: function(e) {
+        this._revalidateLayersOnZoom(this.map.getZoom())
+        this.$.cluster.onMapZoom(e);
+      },
+
+      _addLayer: function(data){
+        if (!(data.properties && data.properties.layerName)) {
+          console.error("layerName is missing from geojson layer. Add it to geojson.properties.layerName");
+          return;
+        }
+
+        if(data.properties.isCluster){
+          this._addClusterLayer(data);
+        }else{
+          this._addFeatureLayer(data);
+        }
+      },
+
+      _addFeatureLayer: function(data) {
+        if (this.dataLayers.layerName) {
+          var layer = this.dataLayer.layerName;
+          var geoJSON = layer.getGeoJSON();
+          Array.prototype.push.apply(geoJSON.features, data.features);
+        } else {
+          var layer = L.mapbox.featureLayer(data).addTo(this.map);
+          layer.name = data.properties.layerName;
+          layer.minZoom = data.properties.minZoom ? data.properties.minZoom : 0;
+          layer.maxZoom = data.properties.maxZoom ? data.properties.maxZoom : 20;
+          this.dataLayers[layer.name] = layer;
+        }
+      },
+
+      _addClusterLayer: function(data){
+        var layer = null;
+        if (this.dataLayers.layerName) {
+          layer = this.dataLayer.layerName;
+        } else {
+          layer = new L.MarkerClusterGroup();
+          layer.name = data.properties.layerName;
+          layer.minZoom = data.properties.minZoom ? data.properties.minZoom : 0;
+          layer.maxZoom = data.properties.maxZoom ? data.properties.maxZoom : 20;
+          this.dataLayers[layer.name] = layer;
+        }
+
+        var ref = this;
+        data.features.forEach(function(f){
+          var fLayer = L.mapbox.featureLayer(f);
+          layer.addLayer(fLayer);
+        });
+        if(!this.map.hasLayer(layer)){
+          this.map.addLayer(layer);
+        }
+      },
+
+      _revalidateLayersOnZoom: function(zoomLevel) {
+        for (var prop in this.dataLayers) {
+          if (this.dataLayers.hasOwnProperty(prop)) {
+            var l = this.dataLayers[prop];
+            if (zoomLevel >= l.minZoom && zoomLevel <= l.maxZoom) {
+              this.showLayer(l.name);
+            } else {
+              this.hideLayer(l.name);
+            }
+          }
+        }
+      },
+    });
+  </script>
+</dom-module>

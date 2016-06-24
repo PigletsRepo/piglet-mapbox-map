@@ -1,0 +1,93 @@
+<link rel="import" href="../iron-icons/maps-icons.html">
+<link rel="import" href="../iron-icons/device-icons.html">
+<link rel="import" href="imports.html">
+
+<dom-module id="piglet-map-cluster">
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'piglet-map-cluster',
+
+      properties: {
+
+      },
+
+      attached: function() {
+        this.clusterLayers = {};
+      },
+
+      addClusterData: function(data) {
+        var ref = this;
+        if (Array.isArray(data)) {
+          data.forEach(function(val) {
+            ref._addClusterLayer(val);
+          });
+        } else {
+          this._addClusterLayer(data);
+        }
+      },
+
+      onMapZoom: function(e) {
+
+      },
+
+      _addClusterLayer: function(data) {
+        if (!(data.properties && data.properties.layerName)) {
+          console.error("layerName is missing from cluster layer. Add it to geojson.properties.layerName");
+          return;
+        }
+        var layer = null;
+        if (this.clusterLayers.layerName) {
+          layer = this.clusterLayers.layerName;
+        } else {
+          layer = new L.MarkerClusterGroup().addTo(this.map);
+          layer.name = data.properties.layerName;
+          layer.minZoom = data.properties.minZoom ? data.properties.minZoom : 0;
+          layer.maxZoom = data.properties.maxZoom ? data.properties.maxZoom : 20;
+          this.clusterLayers[layer.name] = layer;
+        }
+        this._addMarkersToCluster(layer, data.features);
+      },
+
+      _addMarkersToCluster: function(clusterLayer, features) {
+        var ref = this;
+        features.forEach(function(f) {
+          var markerProperties = {};
+          if (f.properties) {
+            markerProperties.markerSize = f.properties["marker-size"];
+            markerProperties.markerSymbol = f.properties["marker-symbol"];
+            markerProperties.markerColor = f.properties["marker-color"];
+          }
+          switch (f.geometry.type) {
+            case "Point":
+              ref._addLocToCluster(clusterLayer, f.geometry.coordinates, markerProperties);
+              break;
+          }
+        });
+      },
+
+      _addLocToCluster: function(clusterLayer, loc, markerProperties) {
+        if (loc) {
+          var marker = L.marker(loc, {
+            icon: this._getMarkerIcon(markerProperties)
+          })
+          console.log(marker)
+          clusterLayer.addLayer(marker);
+        }
+      },
+
+      _getMarkerIcon: function(markerProperties) {
+        var markerSize = markerProperties.markerSize ? markerProperties.markerSize : "medium";
+        var markerSymbol = markerProperties.markerSymbol ? markerProperties.markerSymbol : "circle";
+        var markerColor = markerProperties.markerColor ? markerProperties.markerColor : "#1dbeda";
+        return L.mapbox.marker.icon({
+          'marker-size': markerSize,
+          'marker-symbol': markerSymbol,
+          'marker-color': markerColor
+        });
+      }
+    });
+  </script>
+</dom-module>

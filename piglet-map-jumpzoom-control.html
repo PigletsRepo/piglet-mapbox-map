@@ -1,0 +1,100 @@
+<link rel="import" href="../iron-icons/maps-icons.html">
+<link rel="import" href="../iron-icons/device-icons.html">
+<link rel="import" href="imports.html">
+
+<dom-module id="piglet-map-jumpzoom-control">
+  <template>
+    <style>
+      #jump-control {
+        top: 0;
+        margin-top: 64px;
+      }
+
+      .leaflet-control {
+        text-align: center;
+      }
+
+      .jump-control-element {
+        display: inline-block;
+      }
+
+      .leaflet-control iron-icon {
+        margin-top: 7px;
+        margin-left: 6px;
+        margin-right: 6px;
+        margin-bottom: 7px;
+        --iron-icon-height: 14px;
+        --iron-icon-width: 14px;
+        --iron-icon-fill-color: #404040
+      }
+
+      #jump-zoomin-icon {
+        fill: var(--jump-zoomin-icon-color);
+      }
+
+      .leaflet-control hr {
+        margin-top: 0;
+        margin-bottom: 0;
+        opacity: .25;
+      }
+    </style>
+    <div id="jump-control" class="leaflet-top leaflet-left">
+      <div class="leaflet-bar leaflet-control">
+        <div class="jump-control-element" on-tap="_zoomOutTap">
+          <iron-icon icon="maps:zoom-out-map"></iron-icon>
+        </div>
+        <hr/>
+        <div class="jump-control-element" on-tap="_zoomInTap">
+          <iron-icon id="jump-zoomin-icon" icon="device:gps-fixed"></iron-icon>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'piglet-map-jumpzoom-control',
+      properties: {
+
+        minZoom: {
+          type: Number,
+          value: 2
+        },
+
+        jump: {
+          type: Number,
+          value: 4
+        },
+
+        justZoomActive: {
+          type: Boolean,
+          value: false,
+          notify: true
+        }
+      },
+
+      _zoomOutTap: function() {
+        if (this.map) {
+          this.map.setView(this.map.getCenter(), this.minZoom, {
+            animate: true
+          });
+        }
+      },
+
+      _zoomInTap: function() {
+        this.justZoomActive = !this.justZoomActive;
+        this.customStyle['--jump-zoomin-icon-color'] = this.justZoomActive ? "#e76043" : "#404040";
+        this.updateStyles();
+      },
+
+      onMapClick: function(e){
+        if (this.justZoomActive) {
+          this.map.setView(e.latlng, this.map.getZoom() + this.jump);
+          this.justZoomActive = false;
+          this.customStyle['--jump-zoomin-icon-color'] = "#000000";
+          this.updateStyles();
+        }
+      }
+    });
+  </script>
+</dom-module>

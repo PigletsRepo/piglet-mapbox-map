@@ -1,0 +1,38 @@
+{
+  "name": "piglet-mapbox-map",
+  "version": "0.0.1",
+  "authors": [
+    "Few piglets <shashank004@gmail.com>"
+  ],
+  "description": "An mapbox map element from piglets.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "custom-elements",
+    "polymer",
+    "piglet",
+    "piglets",
+    "mapbox",
+    "map",
+    "maps",
+    "cluster"
+  ],
+  "main": "piglet-mapbox-map.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "mapbox.js": "^2.4.0",
+    "leaflet.markercluster": "^0.4.0",
+    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
+    "iron-icons": "PolymerElements/iron-icons#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "^4.0.0"
+  }
+}

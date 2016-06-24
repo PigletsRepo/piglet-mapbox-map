@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>piglet-mapbox-map Demo</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <link rel="import" href="../piglet-mapbox-map.html">
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body unresolved>
+  <template id="app" is="dom-bind">
+    <piglet-mapbox-map id="map" zoom=5 show-jump-control></piglet-mapbox-map>
+  </template>
+  <script src="./app.js"></script>
+</body>
+
+</html>
