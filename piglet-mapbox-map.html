@@ -226,6 +226,9 @@ Example:
         });
         // Init layers
         this.dataLayers = {};
+
+        //https://github.com/Leaflet/Leaflet/issues/694
+        this.map._onResize()
       },
 
       _initChild: function() {
