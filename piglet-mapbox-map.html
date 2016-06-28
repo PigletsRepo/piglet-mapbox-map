@@ -102,6 +102,14 @@ Example:
         },
 
         /**
+         * Interactive property of map.
+         */
+        disableInteraction: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * Default lat of map.
          */
         lat: {
@@ -115,6 +123,14 @@ Example:
         lng: {
           type: Number,
           value: -74.011,
+        },
+
+        /**
+         * fitBounds of map.
+         */
+        fitBounds: {
+          type: Object,
+          observer: "_onFitBoundsChanged"
         },
 
         /**
@@ -142,8 +158,7 @@ Example:
         this._initChild();
       },
 
-      detached: function() {
-      },
+      detached: function() {},
 
       /**
        * Add the geojson data to the map.
@@ -213,6 +228,7 @@ Example:
             continuousWorld: this.continuousWorld,
             noWrap: this.noWrap
           },
+          zoomControl: !this.disableInteraction
         }
         this.map = L.mapbox.map(this.$.mapView, this.layer, options)
           .setView([this.lat, this.lng], this.zoom);
@@ -227,8 +243,32 @@ Example:
         // Init layers
         this.dataLayers = {};
 
+        if (this.disableInteraction) {
+          this.map.dragging.disable();
+          this.map.touchZoom.disable();
+          this.map.doubleClickZoom.disable();
+          this.map.scrollWheelZoom.disable();
+          this.map.boxZoom.disable();
+        }
+
         //https://github.com/Leaflet/Leaflet/issues/694
         this.map._onResize()
+      },
+
+      _getBounds: function(bounds) {
+        var bbox;
+        if (bounds && bounds.southWest && bounds.northEast &&
+          bounds.southWest.length == 2 && bounds.northEast.length == 2) {
+          var southWest = L.latLng(bounds.southWest[0], bounds.southWest[1]);
+          var northEast = L.latLng(bounds.northEast[0], bounds.northEast[1]);
+          bounds = L.latLngBounds(southWest, northEast);
+        }
+        return bounds;
+      },
+
+      _onFitBoundsChanged: function() {
+        var bounds = this._getBounds(this.fitBounds);
+        this.map.fitBounds(bounds)
       },
 
       _initChild: function() {
@@ -245,15 +285,15 @@ Example:
         this.$.cluster.onMapZoom(e);
       },
 
-      _addLayer: function(data){
+      _addLayer: function(data) {
         if (!(data.properties && data.properties.layerName)) {
           console.error("layerName is missing from geojson layer. Add it to geojson.properties.layerName");
           return;
         }
 
-        if(data.properties.isCluster){
+        if (data.properties.isCluster) {
           this._addClusterLayer(data);
-        }else{
+        } else {
           this._addFeatureLayer(data);
         }
       },
@@ -272,7 +312,7 @@ Example:
         }
       },
 
-      _addClusterLayer: function(data){
+      _addClusterLayer: function(data) {
         var layer = null;
         if (this.dataLayers.layerName) {
           layer = this.dataLayer.layerName;
@@ -285,11 +325,11 @@ Example:
         }
 
         var ref = this;
-        data.features.forEach(function(f){
+        data.features.forEach(function(f) {
           var fLayer = L.mapbox.featureLayer(f);
           layer.addLayer(fLayer);
         });
-        if(!this.map.hasLayer(layer)){
+        if (!this.map.hasLayer(layer)) {
           this.map.addLayer(layer);
         }
       },

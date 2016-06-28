@@ -8,6 +8,14 @@
   app.addEventListener('dom-change', function() {
     console.log('Our app is ready to rock!!!!!!');
     app.$.map.addGeoJSONData(data)
+    // app.$.map.fitBounds = {
+    //   "southWest": [13.250639570043104, 75.08056640625],
+    //   "northEast": [18.26065335675836, 78.914794921875]
+    // }
+    // app.$.map.maxBounds = {
+    //   "southWest": [13.250639570043104, 75.08056640625],
+    //   "northEast": [18.26065335675836, 78.914794921875]
+    // }
   });
 
   var data = [{
@@ -105,5 +113,23 @@
     }
   }]
 }];
+
+// var data = [
+//   {
+//     "type": "Feature",
+//     "geometry": {
+//       "type": "LineString",
+//       "coordinates": [
+//         [-77.03238901390978,38.913188059745586],
+//         [-122.414, 37.776]
+//       ]
+//     },
+//     "properties": {
+//       "stroke": "#fc4353",
+//       "stroke-width": 5,
+//       "layerName": "android"
+//     }
+//   }
+// ];
 
 })(document);
