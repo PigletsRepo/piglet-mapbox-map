@@ -9,8 +9,8 @@
     console.log('Our app is ready to rock!!!!!!');
     app.$.map.addGeoJSONData(data)
     // app.$.map.fitBounds = {
-    //   "southWest": [13.250639570043104, 75.08056640625],
-    //   "northEast": [18.26065335675836, 78.914794921875]
+    //   "southWest": [40.712, -74.227],
+    //   "northEast": [40.774, -74.125]
     // }
     // app.$.map.maxBounds = {
     //   "southWest": [13.250639570043104, 75.08056640625],

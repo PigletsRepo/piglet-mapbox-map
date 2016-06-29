@@ -82,7 +82,7 @@ Example:
          */
         maxZoom: {
           type: Number,
-          value: 18
+          value: 20
         },
 
         /**
@@ -142,17 +142,15 @@ Example:
         }
       },
 
-      // Element Lifecycle
+      behaviors: [
+        Polymer.IronResizableBehavior
+      ],
 
-      ready: function() {
-        // `ready` is called after all elements have been configured, but
-        // propagates bottom-up. This element's children are ready, but parents
-        // are not.
-        //
-        // This is the point where you should make modifications to the DOM (when
-        // necessary), or kick off any processes the element wants to perform.
+      listeners: {
+        'iron-resize': 'resize'
       },
 
+      // Element Lifecycle
       attached: function() {
         this._initMapbox();
         this._initChild();
@@ -166,6 +164,10 @@ Example:
        * @param {data} data The geojson data to be added. It can be a single FeatureCollection or an array of FeatureCollections.
        */
       addGeoJSONData: function(data) {
+        if (!this.isInitialized) {
+          console.log("Can't add geojson data, map not initialized");
+          return;
+        }
         var ref = this;
         if (Array.isArray(data)) {
           data.forEach(function(val) {
@@ -217,8 +219,35 @@ Example:
         }
       },
 
+      invalidateSize: function() {
+        if (this.isInitialized) {
+          setTimeout(function() {
+            this.map.invalidateSize()
+          }.bind(this), 1);
+        }
+      },
+
+      resize: function() {
+        this.invalidateSize();
+        if(this.fitBounds){
+          setTimeout(function(){
+            this._onFitBoundsChanged();
+          }.bind(this), 1);
+        }
+      },
+
+
       // Private methods
       _initMapbox: function() {
+        if (this.map) {
+          return; // already initialized
+        }
+        if (!(window.L && window.L.mapbox)) {
+          return; // api not loaded
+        }
+        if (!this.isAttached) {
+          return; // not attached
+        }
         L.mapbox.accessToken = this.accessToken;
         var options = {
           zoom: this.zoom,
@@ -250,9 +279,8 @@ Example:
           this.map.scrollWheelZoom.disable();
           this.map.boxZoom.disable();
         }
-
-        //https://github.com/Leaflet/Leaflet/issues/694
-        this.map._onResize()
+        this.isInitialized = true;
+        this.fire('map-init');
       },
 
       _getBounds: function(bounds) {
