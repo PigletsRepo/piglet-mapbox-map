@@ -180,6 +180,18 @@ Example:
       },
 
       /**
+       * Add the circle markers to the map.
+       *
+       * @param {lat} lat The latitude of the circle marker.
+       * @param {lng} lat The longitude of the circle marker.
+       * @param {options} options The options of the circle marker.
+       */
+      addCircleMarker: function(lat, lng, options) {
+        var marker = L.circleMarker(new L.LatLng(lat, lng), options);
+        marker.addTo(this.map);
+      },
+
+      /**
        * Clear a layer.
        *
        * @param {layerName} layerName The name of the layer to be cleared.
@@ -229,8 +241,8 @@ Example:
 
       resize: function() {
         this.invalidateSize();
-        if(this.fitBounds){
-          setTimeout(function(){
+        if (this.fitBounds) {
+          setTimeout(function() {
             this._onFitBoundsChanged();
           }.bind(this), 1);
         }

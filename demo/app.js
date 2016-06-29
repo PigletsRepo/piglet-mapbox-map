@@ -7,7 +7,18 @@
   // have resolved and content has been stamped to the page
   app.addEventListener('dom-change', function() {
     console.log('Our app is ready to rock!!!!!!');
-    app.$.map.addGeoJSONData(data)
+    app.$.map.addGeoJSONData(data);
+    
+    // app.$.map.addCircleMarker(40.74426574524173, -73.99566650390625, {
+    //     radius: 6,
+    //     weight: 4,
+    //     stroke: true,
+    //     color: "#e6474c",
+    //     fillOpacity: 1,
+    //     opacity: 1,
+    //     fillColor: "#fff"
+    //   });
+
     // app.$.map.fitBounds = {
     //   "southWest": [40.712, -74.227],
     //   "northEast": [40.774, -74.125]
