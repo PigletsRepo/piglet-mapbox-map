@@ -186,11 +186,22 @@ Example:
        * @param {lng} lat The longitude of the circle marker.
        * @param {options} options The options of the circle marker.
        */
-      addCircleMarker: function(lat, lng, options) {
-        var marker = L.circleMarker(new L.LatLng(lat, lng), options);
-        marker.addTo(this.map);
-      },
+       addCircleMarker: function(lat, lng, options) {
+         var circleMarkerLayer = this.dataLayers["circleMarkerLayer"];
+         if(!circleMarkerLayer){
+           circleMarkerLayer = L.layerGroup().addTo(this.map)
+           this.dataLayers["circleMarkerLayer"] = circleMarkerLayer;
+         }
+         var marker = L.circleMarker(new L.LatLng(lat, lng), options);
+         marker.addTo(circleMarkerLayer);
+       },
 
+       /**
+        * Remove all circle markers.
+        */
+       removeAllCircleMarkers: function() {
+         this.clearLayer("circleMarkerLayer")
+       },
       /**
        * Clear a layer.
        *
